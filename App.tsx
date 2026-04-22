@@ -79,7 +79,7 @@ const App: React.FC = () => {
       </div>
 
       {/* Navbar */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-[#020617]/90 backdrop-blur-lg border-b border-white/5 py-4' : 'bg-transparent py-6'}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-[#020617]/90 backdrop-blur-lg border-b border-white/5 py-2' : 'bg-transparent py-3'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <a href="#"><Logo /></a>
           
@@ -137,7 +137,7 @@ const App: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider mb-6 animate-float">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider mb-6 mt-10 animate-float">
               <Zap size={14} /> Agentic AI Agency
             </div>
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
