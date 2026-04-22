@@ -27,8 +27,8 @@ import {
   Activity,
   Quote
 } from 'lucide-react';
-import { NeuralNetworkBackground } from './components/NeuralNetworkBackground';
-import { AgenticWorkflowAnimation } from './components/AgenticWorkflowAnimation';
+import { NeuralNetworkBackground } from './NeuralNetworkBackground';
+import { AgenticWorkflowAnimation } from './AgenticWorkflowAnimation';
 
 const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -54,11 +54,11 @@ const App: React.FC = () => {
   ];
 
   const Logo = () => (
-    <div className="flex items-center gap-3 group">
-      <div className="w-10 h-10 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-        <img src="logo.png" alt="Sprugen Logo" className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+    <div className="flex items-center gap-0 group">
+      <div className="w-28 h-28 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+        <img src="/Sprugen_logo.png" alt="Sprugen Logo" className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
       </div>
-      <span className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">Sprugen</span>
+      <span className="-ml-6 text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">Sprugen</span>
     </div>
   );
 
@@ -83,13 +83,15 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <a href="#"><Logo /></a>
           
-          <div className="hidden md:flex items-center gap-8">
-            {['Services', 'Pricing', 'Contact', 'About'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="text-sm font-medium text-gray-400 hover:text-blue-400 transition-colors relative group">
-                {item}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all group-hover:w-full"></span>
-              </a>
-            ))}
+          <div className="hidden md:flex items-center flex-1 mx-8">
+            <div className="flex items-center justify-evenly flex-1">
+              {['Services', 'Pricing', 'Contact', 'About'].map((item) => (
+                <a key={item} href={`#${item.toLowerCase()}`} className="text-xl font-medium text-gray-400 hover:text-blue-400 transition-colors relative group whitespace-nowrap">
+                  {item}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all group-hover:w-full"></span>
+                </a>
+              ))}
+            </div>
             <button className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-full text-sm font-semibold transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)]">
               Free Audit
             </button>
@@ -394,7 +396,7 @@ const App: React.FC = () => {
                 <div className="flex items-center gap-6">
                   <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-blue-500/30 p-1">
                     <div className="w-full h-full rounded-full overflow-hidden">
-                      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?fit=crop&w=300&h=300" alt="Haroon" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+                      <img src="/haroon_pic.jpeg" alt="Haroon" className="w-full h-full object-cover transition-all duration-700" />
                     </div>
                   </div>
                   <div>
