@@ -30,15 +30,40 @@ import {
 import { NeuralNetworkBackground } from './NeuralNetworkBackground';
 import { AgenticWorkflowAnimation } from './AgenticWorkflowAnimation';
 
+const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL as string;
+
 const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [formData, setFormData] = useState({ 'Full Name': '', 'Email Address': '', 'Phone Number': '', 'Company Name': '', 'Business Objective': '' });
+  const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormStatus('submitting');
+    try {
+      const url = new URL(GOOGLE_SCRIPT_URL);
+      url.searchParams.append('Timestamp', new Date().toLocaleString());
+      (Object.entries(formData) as [string, string][]).forEach(([key, value]) => {
+        url.searchParams.append(key, value);
+      });
+      await fetch(url.toString(), { method: 'GET', mode: 'no-cors' });
+      setFormStatus('success');
+      setFormData({ 'Full Name': '', 'Email Address': '', 'Phone Number': '', 'Company Name': '', 'Business Objective': '' });
+    } catch {
+      setFormStatus('error');
+    }
+  };
 
   const coreServices = [
     { title: "Sales Lead Automation", desc: "Capture leads and move them directly into your pipeline with zero friction.", icon: <Crosshair className="text-blue-400" /> },
@@ -337,38 +362,50 @@ const App: React.FC = () => {
             <p className="text-xl text-gray-400 leading-relaxed">Book your free audit and see exactly what we can automate.</p>
           </div>
           
-          <motion.form 
+          <motion.form
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            onSubmit={handleFormSubmit}
             className="glass-card p-10 md:p-16 rounded-[4rem] border border-white/10 space-y-8 hover:border-blue-500/10 transition-colors duration-700"
           >
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-3">
                 <label className="text-sm font-bold text-gray-400 tracking-wide uppercase">Full Name</label>
-                <input type="text" placeholder="John Doe" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]" />
+                <input type="text" name="Full Name" value={formData['Full Name']} onChange={handleFormChange} placeholder="John Doe" required className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]" />
               </div>
               <div className="space-y-3">
                 <label className="text-sm font-bold text-gray-400 tracking-wide uppercase">Email Address</label>
-                <input type="email" placeholder="john@company.com" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]" />
+                <input type="email" name="Email Address" value={formData['Email Address']} onChange={handleFormChange} placeholder="john@company.com" required className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]" />
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-3">
                 <label className="text-sm font-bold text-gray-400 tracking-wide uppercase">Phone Number</label>
-                <input type="tel" placeholder="+1 (555) 000-0000" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]" />
+                <input type="tel" name="Phone Number" value={formData['Phone Number']} onChange={handleFormChange} placeholder="+1 (555) 000-0000" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]" />
               </div>
               <div className="space-y-3">
                 <label className="text-sm font-bold text-gray-400 tracking-wide uppercase">Company Name</label>
-                <input type="text" placeholder="Acme Inc." className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]" />
+                <input type="text" name="Company Name" value={formData['Company Name']} onChange={handleFormChange} placeholder="Acme Inc." className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]" />
               </div>
             </div>
             <div className="space-y-3">
               <label className="text-sm font-bold text-gray-400 tracking-wide uppercase">Business Objective</label>
-              <textarea placeholder="Tell us what you want to automate..." rows={4} className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]"></textarea>
+              <textarea name="Business Objective" value={formData['Business Objective']} onChange={handleFormChange} placeholder="Tell us what you want to automate..." rows={4} className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]"></textarea>
             </div>
-            {/* FIX: Changed 'class' to 'className' in the button below */}
-            <button type="submit" className="w-full py-5 bg-blue-600 rounded-2xl font-black text-xl hover:bg-blue-500 shadow-2xl shadow-blue-500/30 transition-all active:scale-[0.98]">Send Message</button>
+            {formStatus === 'success' && (
+              <p className="text-emerald-400 font-bold text-center">Message sent! We'll be in touch soon.</p>
+            )}
+            {formStatus === 'error' && (
+              <p className="text-red-400 font-bold text-center">Something went wrong. Please try again.</p>
+            )}
+            <button
+              type="submit"
+              disabled={formStatus === 'submitting'}
+              className="w-full py-5 bg-blue-600 rounded-2xl font-black text-xl hover:bg-blue-500 shadow-2xl shadow-blue-500/30 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {formStatus === 'submitting' ? 'Sending...' : 'Send Message'}
+            </button>
           </motion.form>
         </div>
       </section>
