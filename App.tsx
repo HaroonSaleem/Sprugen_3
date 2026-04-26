@@ -236,6 +236,9 @@ const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [formData, setFormData] = useState({ 'Full Name': '', 'Email Address': '', 'Phone Number': '', 'Company Name': '', 'Business Objective': '' });
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [signupData, setSignupData] = useState({ name: '', email: '' });
+  const [signupStatus, setSignupStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
   const [selectedCountry, setSelectedCountry] = useState(dialCountries.find(c => c.name === 'United States')!);
   const [phoneDropdownOpen, setPhoneDropdownOpen] = useState(false);
   const [phoneSearch, setPhoneSearch] = useState('');
@@ -261,6 +264,33 @@ const App: React.FC = () => {
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handlePricingCTA = (planName: string, cta: string) => {
+    if (cta === 'Contact Sales') {
+      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      setSignupData({ name: '', email: '' });
+      setSignupStatus('idle');
+      setSelectedPlan(planName);
+    }
+  };
+
+  const handleSignupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSignupStatus('submitting');
+    try {
+      const url = new URL(GOOGLE_SCRIPT_URL);
+      url.searchParams.append('Timestamp', new Date().toLocaleString());
+      url.searchParams.append('Full Name', signupData.name);
+      url.searchParams.append('Email Address', signupData.email);
+      url.searchParams.append('Plan', selectedPlan!);
+      url.searchParams.append('Source', 'Pricing CTA');
+      await fetch(url.toString(), { method: 'GET', mode: 'no-cors' });
+      setSignupStatus('success');
+    } catch {
+      setSignupStatus('idle');
+    }
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -558,7 +588,9 @@ const App: React.FC = () => {
                     </li>
                   ))}
                 </ul>
-                <button className={`w-full py-4 rounded-2xl font-bold transition-all ${offer.highlight ? 'bg-white text-blue-600 hover:bg-blue-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600 hover:text-white hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]'}`}>
+                <button
+                  onClick={() => handlePricingCTA(offer.name, offer.cta)}
+                  className={`w-full py-4 rounded-2xl font-bold transition-all ${offer.highlight ? 'bg-white text-blue-600 hover:bg-blue-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600 hover:text-white hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]'}`}>
                   {offer.cta}
                 </button>
               </motion.div>
@@ -785,6 +817,92 @@ const App: React.FC = () => {
           </div>
         </div>
       </footer>
+      {/* Pricing Signup Modal */}
+      <AnimatePresence>
+        {selectedPlan && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setSelectedPlan(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 24 }}
+              transition={{ type: 'spring', duration: 0.4, bounce: 0.2 }}
+              className="glass-card border border-white/10 rounded-[2.5rem] p-10 w-full max-w-md relative"
+              onClick={e => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedPlan(null)}
+                className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"
+              >
+                <X size={18} />
+              </button>
+
+              {signupStatus === 'success' ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle2 size={32} className="text-emerald-400" />
+                  </div>
+                  <h3 className="text-2xl font-black mb-3">You're in!</h3>
+                  <p className="text-gray-400">We'll reach out within 24 hours to get you started with <span className="text-blue-400 font-bold">{selectedPlan}</span>.</p>
+                  <button
+                    onClick={() => setSelectedPlan(null)}
+                    className="mt-8 px-8 py-3 bg-blue-600 rounded-full font-bold hover:bg-blue-500 transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-8">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider mb-4">
+                      <Zap size={12} /> {selectedPlan}
+                    </div>
+                    <h3 className="text-2xl font-black">Claim Your Spot</h3>
+                    <p className="text-gray-400 text-sm mt-2">We'll reach out within 24 hours to kick things off.</p>
+                  </div>
+
+                  <form onSubmit={handleSignupSubmit} className="space-y-5">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Your Name</label>
+                      <input
+                        type="text"
+                        value={signupData.name}
+                        onChange={e => setSignupData(p => ({ ...p, name: e.target.value }))}
+                        placeholder="John Doe"
+                        required
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Email Address</label>
+                      <input
+                        type="email"
+                        value={signupData.email}
+                        onChange={e => setSignupData(p => ({ ...p, email: e.target.value }))}
+                        placeholder="john@company.com"
+                        required
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={signupStatus === 'submitting'}
+                      className="w-full py-4 bg-blue-600 rounded-2xl font-black text-lg hover:bg-blue-500 transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-2 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+                    >
+                      {signupStatus === 'submitting' ? 'Sending...' : 'Get Started'}
+                    </button>
+                  </form>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
