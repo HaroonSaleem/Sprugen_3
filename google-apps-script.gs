@@ -20,9 +20,10 @@ function doGet(e) {
         throw new Error("Sheet Packages not found");
       }
       pkg.appendRow([
+        p["Timestamp"] || new Date().toLocaleString(),
         category,
         p["Name"] || "",
-        p["Phone"] || "",
+        p["Phone Number"] || "",
         p["Email"] || ""
       ]);
     } else {

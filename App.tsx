@@ -295,9 +295,10 @@ const App: React.FC = () => {
     setSignupStatus('submitting');
     try {
       const url = new URL(GOOGLE_SCRIPT_URL);
+      url.searchParams.append('Timestamp', new Date().toLocaleString());
       url.searchParams.append('Category', selectedPlan!);
       url.searchParams.append('Name', signupData.name);
-      url.searchParams.append('Phone', signupData.phone);
+      url.searchParams.append('Phone Number', signupData.phone);
       url.searchParams.append('Email', signupData.email);
       await fetch(url.toString(), { method: 'GET', mode: 'no-cors' });
       setSignupStatus('success');
