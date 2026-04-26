@@ -295,7 +295,6 @@ const App: React.FC = () => {
     setSignupStatus('submitting');
     try {
       const url = new URL(GOOGLE_SCRIPT_URL);
-      url.searchParams.append('Sheet', 'Packages');
       url.searchParams.append('Category', selectedPlan!);
       url.searchParams.append('Name', signupData.name);
       url.searchParams.append('Phone', signupData.phone);
