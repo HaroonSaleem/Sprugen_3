@@ -237,13 +237,18 @@ const App: React.FC = () => {
   const [formData, setFormData] = useState({ 'Full Name': '', 'Email Address': '', 'Phone Number': '', 'Company Name': '', 'Business Objective': '' });
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [signupData, setSignupData] = useState({ name: '', email: '' });
+  const [signupData, setSignupData] = useState({ name: '', email: '', phone: '' });
   const [signupStatus, setSignupStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
   const [selectedCountry, setSelectedCountry] = useState(dialCountries.find(c => c.name === 'United States')!);
   const [phoneDropdownOpen, setPhoneDropdownOpen] = useState(false);
   const [phoneSearch, setPhoneSearch] = useState('');
   const [rawPhone, setRawPhone] = useState('');
   const phoneDropdownRef = useRef<HTMLDivElement>(null);
+  const [modalCountry, setModalCountry] = useState(dialCountries.find(c => c.name === 'United States')!);
+  const [modalPhoneDropdownOpen, setModalPhoneDropdownOpen] = useState(false);
+  const [modalPhoneSearch, setModalPhoneSearch] = useState('');
+  const [modalRawPhone, setModalRawPhone] = useState('');
+  const modalPhoneDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -262,18 +267,27 @@ const App: React.FC = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, [phoneDropdownOpen]);
 
+  useEffect(() => {
+    if (!modalPhoneDropdownOpen) { setModalPhoneSearch(''); return; }
+    const handler = (e: MouseEvent) => {
+      if (modalPhoneDropdownRef.current && !modalPhoneDropdownRef.current.contains(e.target as Node)) {
+        setModalPhoneDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [modalPhoneDropdownOpen]);
+
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handlePricingCTA = (planName: string, cta: string) => {
-    if (cta === 'Contact Sales') {
-      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      setSignupData({ name: '', email: '' });
-      setSignupStatus('idle');
-      setSelectedPlan(planName);
-    }
+  const handlePricingCTA = (planName: string) => {
+    setSignupData({ name: '', email: '', phone: '' });
+    setModalRawPhone('');
+    setModalCountry(dialCountries.find(c => c.name === 'United States')!);
+    setSignupStatus('idle');
+    setSelectedPlan(planName);
   };
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
@@ -281,11 +295,11 @@ const App: React.FC = () => {
     setSignupStatus('submitting');
     try {
       const url = new URL(GOOGLE_SCRIPT_URL);
-      url.searchParams.append('Timestamp', new Date().toLocaleString());
-      url.searchParams.append('Full Name', signupData.name);
-      url.searchParams.append('Email Address', signupData.email);
-      url.searchParams.append('Plan', selectedPlan!);
-      url.searchParams.append('Source', 'Pricing CTA');
+      url.searchParams.append('Sheet', 'Packages');
+      url.searchParams.append('Category', selectedPlan!);
+      url.searchParams.append('Name', signupData.name);
+      url.searchParams.append('Phone', signupData.phone);
+      url.searchParams.append('Email', signupData.email);
       await fetch(url.toString(), { method: 'GET', mode: 'no-cors' });
       setSignupStatus('success');
     } catch {
@@ -589,7 +603,7 @@ const App: React.FC = () => {
                   ))}
                 </ul>
                 <button
-                  onClick={() => handlePricingCTA(offer.name, offer.cta)}
+                  onClick={() => handlePricingCTA(offer.name)}
                   className={`w-full py-4 rounded-2xl font-bold transition-all ${offer.highlight ? 'bg-white text-blue-600 hover:bg-blue-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600 hover:text-white hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]'}`}>
                   {offer.cta}
                 </button>
@@ -877,6 +891,76 @@ const App: React.FC = () => {
                         required
                         className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]"
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Phone Number</label>
+                      <div className="flex gap-2">
+                        <div ref={modalPhoneDropdownRef} className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setModalPhoneDropdownOpen(o => !o)}
+                            className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-2xl py-4 px-4 text-white hover:bg-white/[0.08] focus:border-blue-500 transition-all outline-none whitespace-nowrap"
+                          >
+                            <span className="text-xl leading-none">{modalCountry.flag}</span>
+                            <span className="text-sm text-gray-300">{modalCountry.dial}</span>
+                            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${modalPhoneDropdownOpen ? 'rotate-180' : ''}`} />
+                          </button>
+                          {modalPhoneDropdownOpen && (
+                            <div className="absolute top-full left-0 mt-2 w-72 bg-[#0f172a] border border-white/10 rounded-2xl z-[60] shadow-2xl overflow-hidden">
+                              <div className="p-3 border-b border-white/10">
+                                <input
+                                  type="text"
+                                  value={modalPhoneSearch}
+                                  onChange={e => setModalPhoneSearch(e.target.value)}
+                                  placeholder="Search country or code..."
+                                  autoFocus
+                                  className="w-full bg-white/10 rounded-xl py-2 px-3 text-sm text-white outline-none placeholder-gray-500 focus:bg-white/15 transition-all"
+                                />
+                              </div>
+                              <div className="max-h-48 overflow-y-auto">
+                                {dialCountries
+                                  .filter(c =>
+                                    c.name.toLowerCase().includes(modalPhoneSearch.toLowerCase()) ||
+                                    c.dial.includes(modalPhoneSearch)
+                                  )
+                                  .map((c) => (
+                                    <button
+                                      key={c.name}
+                                      type="button"
+                                      onClick={() => {
+                                        setModalCountry(c);
+                                        setModalPhoneDropdownOpen(false);
+                                        setSignupData(prev => ({ ...prev, phone: `${c.dial} ${modalRawPhone}` }));
+                                      }}
+                                      className="flex items-center gap-3 w-full px-4 py-3 hover:bg-white/10 transition-colors text-left"
+                                    >
+                                      <span className="text-lg leading-none">{c.flag}</span>
+                                      <span className="text-sm text-gray-300 flex-1">{c.name}</span>
+                                      <span className="text-xs text-gray-500 shrink-0">{c.dial}</span>
+                                    </button>
+                                  ))}
+                                {dialCountries.filter(c =>
+                                  c.name.toLowerCase().includes(modalPhoneSearch.toLowerCase()) ||
+                                  c.dial.includes(modalPhoneSearch)
+                                ).length === 0 && (
+                                  <p className="text-center text-gray-500 text-sm py-6">No results</p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <input
+                          type="tel"
+                          value={modalRawPhone}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setModalRawPhone(val);
+                            setSignupData(prev => ({ ...prev, phone: `${modalCountry.dial} ${val}` }));
+                          }}
+                          placeholder="555 000-0000"
+                          className="flex-1 bg-white/5 border border-white/10 rounded-2xl py-4 px-5 text-white focus:border-blue-500 transition-all outline-none focus:bg-white/[0.08]"
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Email Address</label>
