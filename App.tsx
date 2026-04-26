@@ -32,6 +32,7 @@ import { NeuralNetworkBackground } from './NeuralNetworkBackground';
 import { AgenticWorkflowAnimation } from './AgenticWorkflowAnimation';
 
 const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL as string;
+const GOOGLE_PACKAGES_SCRIPT_URL = import.meta.env.VITE_GOOGLE_PACKAGES_SCRIPT_URL as string;
 
 const dialCountries = [
   { flag: '🇦🇫', name: 'Afghanistan', dial: '+93' },
@@ -294,7 +295,7 @@ const App: React.FC = () => {
     e.preventDefault();
     setSignupStatus('submitting');
     try {
-      const url = new URL(GOOGLE_SCRIPT_URL);
+      const url = new URL(GOOGLE_PACKAGES_SCRIPT_URL);
       url.searchParams.append('Timestamp', new Date().toLocaleString());
       url.searchParams.append('Category', selectedPlan!);
       url.searchParams.append('Name', signupData.name);

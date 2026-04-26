@@ -4,24 +4,23 @@ function doGet(e) {
     var p = e.parameter;
 
     var sheets = ss.getSheets();
-    var audit = null;
+    var pkg = null;
     for (var i = 0; i < sheets.length; i++) {
-      if (sheets[i].getName().toLowerCase() === "audit forms") {
-        audit = sheets[i];
+      if (sheets[i].getName().toLowerCase() === "packages") {
+        pkg = sheets[i];
         break;
       }
     }
-    if (!audit) {
-      throw new Error("Sheet audit forms not found");
+    if (!pkg) {
+      throw new Error("Sheet Packages not found");
     }
 
-    audit.appendRow([
+    pkg.appendRow([
       p["Timestamp"] || new Date().toLocaleString(),
-      p["Full Name"] || "",
-      p["Email Address"] || "",
+      p["Category"] || "",
+      p["Name"] || "",
       p["Phone Number"] || "",
-      p["Company Name"] || "",
-      p["Business Objective"] || ""
+      p["Email"] || ""
     ]);
 
     return ContentService
